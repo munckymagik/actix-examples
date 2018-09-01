@@ -116,7 +116,10 @@ pub fn update(
     }
 }
 
-fn put(req: HttpRequest<AppState>, params: Path<UpdateParams>) -> FutureResponse<HttpResponse> {
+fn put(
+    req: HttpRequest<AppState>,
+    params: Path<UpdateParams>,
+) -> FutureResponse<HttpResponse> {
     req.state()
         .db
         .send(ToggleTask { id: params.id })
@@ -128,17 +131,17 @@ fn put(req: HttpRequest<AppState>, params: Path<UpdateParams>) -> FutureResponse
         .responder()
 }
 
-fn delete(req: HttpRequest<AppState>, params: Path<UpdateParams>) -> FutureResponse<HttpResponse> {
+fn delete(
+    req: HttpRequest<AppState>,
+    params: Path<UpdateParams>,
+) -> FutureResponse<HttpResponse> {
     req.state()
         .db
         .send(DeleteTask { id: params.id })
         .from_err()
         .and_then(move |res| match res {
             Ok(_) => {
-                session::set_flash(
-                    &req,
-                    FlashMessage::success("Task was deleted."),
-                )?;
+                session::set_flash(&req, FlashMessage::success("Task was deleted."))?;
                 Ok(redirect_to("/"))
             }
             Err(_) => Ok(internal_server_error()),
