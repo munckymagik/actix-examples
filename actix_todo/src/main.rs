@@ -17,6 +17,7 @@ use actix_web::middleware::session::{CookieSessionBackend, SessionStorage};
 use actix_web::middleware::Logger;
 use actix_web::{dev::Resource, fs, http, server, App};
 use dotenv::dotenv;
+use std::env;
 use tera::Tera;
 
 mod api;
@@ -37,7 +38,8 @@ fn main() {
     // Start the Actix system
     let system = actix::System::new("todo-app");
 
-    let pool = db::init_pool();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let pool = db::init_pool(&database_url).expect("Failed to create pool");
     let addr = SyncArbiter::start(NUM_DB_THREADS, move || db::DbExecutor(pool.clone()));
 
     let app = move || {

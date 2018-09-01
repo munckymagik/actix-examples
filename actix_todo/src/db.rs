@@ -1,22 +1,20 @@
-use std::env;
 use std::ops::Deref;
 
 use actix::prelude::{Actor, Handler, Message, SyncContext};
 use actix_web::{error, Error};
 use diesel::pg::PgConnection;
-use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use diesel::r2d2::{ConnectionManager, Pool, PoolError, PooledConnection};
 
 use model::{NewTask, Task};
 
-pub fn init_pool() -> Pool<ConnectionManager<PgConnection>> {
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+type PgPool = Pool<ConnectionManager<PgConnection>>;
+
+pub fn init_pool(database_url: &str) -> Result<PgPool, PoolError> {
     let manager = ConnectionManager::<PgConnection>::new(database_url);
-    Pool::builder()
-        .build(manager)
-        .expect("Failed to create pool")
+    Pool::builder().build(manager)
 }
 
-pub struct DbExecutor(pub Pool<ConnectionManager<PgConnection>>);
+pub struct DbExecutor(pub PgPool);
 
 impl DbExecutor {
     pub fn get_conn(
