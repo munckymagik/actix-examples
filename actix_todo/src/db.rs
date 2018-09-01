@@ -1,4 +1,5 @@
 use std::env;
+use std::ops::Deref;
 
 use actix::prelude::{Actor, Handler, Message, SyncContext};
 use actix_web::{error, Error};
@@ -48,7 +49,7 @@ impl Handler<CreateTask> for DbExecutor {
         let new_task = NewTask {
             description: todo.description,
         };
-        Task::insert(new_task, self.get_conn()?)
+        Task::insert(new_task, self.get_conn()?.deref())
             .map(|_| ())
             .map_err(|_| error::ErrorInternalServerError("Error inserting task"))
     }
@@ -64,7 +65,7 @@ impl Handler<AllTasks> for DbExecutor {
     type Result = Result<Vec<Task>, Error>;
 
     fn handle(&mut self, _: AllTasks, _: &mut Self::Context) -> Self::Result {
-        Task::all(self.get_conn()?)
+        Task::all(self.get_conn()?.deref())
             .map_err(|_| error::ErrorInternalServerError("Error inserting task"))
     }
 }
@@ -81,7 +82,7 @@ impl Handler<ToggleTask> for DbExecutor {
     type Result = Result<(), Error>;
 
     fn handle(&mut self, task: ToggleTask, _: &mut Self::Context) -> Self::Result {
-        Task::toggle_with_id(task.id, self.get_conn()?)
+        Task::toggle_with_id(task.id, self.get_conn()?.deref())
             .map(|_| ())
             .map_err(|_| error::ErrorInternalServerError("Error inserting task"))
     }
@@ -99,7 +100,7 @@ impl Handler<DeleteTask> for DbExecutor {
     type Result = Result<(), Error>;
 
     fn handle(&mut self, task: DeleteTask, _: &mut Self::Context) -> Self::Result {
-        Task::delete_with_id(task.id, self.get_conn()?)
+        Task::delete_with_id(task.id, self.get_conn()?.deref())
             .map(|_| ())
             .map_err(|_| error::ErrorInternalServerError("Error inserting task"))
     }

@@ -1,7 +1,6 @@
 use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use diesel::r2d2::{ConnectionManager, PooledConnection};
 
 use schema::{
     tasks, tasks::dsl::{completed as task_completed, tasks as all_tasks},
@@ -21,38 +20,27 @@ pub struct Task {
 }
 
 impl Task {
-    pub fn all(
-        conn: PooledConnection<ConnectionManager<PgConnection>>,
-    ) -> QueryResult<Vec<Task>> {
-        all_tasks.order(tasks::id.desc()).load::<Task>(&conn)
+    pub fn all(conn: &PgConnection) -> QueryResult<Vec<Task>> {
+        all_tasks.order(tasks::id.desc()).load::<Task>(conn)
     }
 
-    pub fn insert(
-        todo: NewTask,
-        conn: PooledConnection<ConnectionManager<PgConnection>>,
-    ) -> QueryResult<usize> {
+    pub fn insert(todo: NewTask, conn: &PgConnection) -> QueryResult<usize> {
         diesel::insert_into(tasks::table)
             .values(&todo)
-            .execute(&conn)
+            .execute(conn)
     }
 
-    pub fn toggle_with_id(
-        id: i32,
-        conn: PooledConnection<ConnectionManager<PgConnection>>,
-    ) -> QueryResult<usize> {
-        let task = all_tasks.find(id).get_result::<Task>(&conn)?;
+    pub fn toggle_with_id(id: i32, conn: &PgConnection) -> QueryResult<usize> {
+        let task = all_tasks.find(id).get_result::<Task>(conn)?;
 
         let new_status = !task.completed;
         let updated_task = diesel::update(all_tasks.find(id));
         updated_task
             .set(task_completed.eq(new_status))
-            .execute(&conn)
+            .execute(conn)
     }
 
-    pub fn delete_with_id(
-        id: i32,
-        conn: PooledConnection<ConnectionManager<PgConnection>>,
-    ) -> QueryResult<usize> {
-        diesel::delete(all_tasks.find(id)).execute(&conn)
+    pub fn delete_with_id(id: i32, conn: &PgConnection) -> QueryResult<usize> {
+        diesel::delete(all_tasks.find(id)).execute(conn)
     }
 }
