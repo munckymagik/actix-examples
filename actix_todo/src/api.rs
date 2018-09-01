@@ -110,30 +110,38 @@ pub fn update(
     (req, params, form): (HttpRequest<AppState>, Path<UpdateParams>, Form<UpdateForm>),
 ) -> FutureResponse<HttpResponse> {
     match form._method.as_ref() {
-        "put" => req.state()
-            .db
-            .send(ToggleTask { id: params.id })
-            .from_err()
-            .and_then(move |res| match res {
-                Ok(_) => Ok(redirect_to("/")),
-                Err(_) => Ok(internal_server_error()),
-            })
-            .responder(),
-        "delete" => req.state()
-            .db
-            .send(DeleteTask { id: params.id })
-            .from_err()
-            .and_then(move |res| match res {
-                Ok(_) => {
-                    session::set_flash(
-                        &req,
-                        FlashMessage::success("Task was deleted."),
-                    )?;
-                    Ok(redirect_to("/"))
-                }
-                Err(_) => Ok(internal_server_error()),
-            })
-            .responder(),
+        "put" => put(req, params),
+        "delete" => delete(req, params),
         _ => future::ok(bad_request()).responder(),
     }
+}
+
+fn put(req: HttpRequest<AppState>, params: Path<UpdateParams>) -> FutureResponse<HttpResponse> {
+    req.state()
+        .db
+        .send(ToggleTask { id: params.id })
+        .from_err()
+        .and_then(move |res| match res {
+            Ok(_) => Ok(redirect_to("/")),
+            Err(_) => Ok(internal_server_error()),
+        })
+        .responder()
+}
+
+fn delete(req: HttpRequest<AppState>, params: Path<UpdateParams>) -> FutureResponse<HttpResponse> {
+    req.state()
+        .db
+        .send(DeleteTask { id: params.id })
+        .from_err()
+        .and_then(move |res| match res {
+            Ok(_) => {
+                session::set_flash(
+                    &req,
+                    FlashMessage::success("Task was deleted."),
+                )?;
+                Ok(redirect_to("/"))
+            }
+            Err(_) => Ok(internal_server_error()),
+        })
+        .responder()
 }
