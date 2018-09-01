@@ -42,7 +42,7 @@ fn internal_server_error() -> HttpResponse {
     HttpResponse::InternalServerError().body("500 Internal Server Error")
 }
 
-pub fn handle_index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
+pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     req.state()
         .db
         .send(AllTasks)
@@ -69,7 +69,7 @@ pub fn handle_index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> 
         .responder()
 }
 
-pub fn handle_create(
+pub fn create(
     (req, params): (HttpRequest<AppState>, Form<CreateForm>),
 ) -> FutureResponse<HttpResponse> {
     if params.description.is_empty() {
@@ -93,7 +93,7 @@ pub fn handle_create(
     }
 }
 
-pub fn handle_update_or_delete(
+pub fn update_or_delete(
     (req, params, form): (HttpRequest<AppState>, Path<UpdateParams>, Form<UpdateForm>),
 ) -> FutureResponse<HttpResponse> {
     match form._method.as_ref() {

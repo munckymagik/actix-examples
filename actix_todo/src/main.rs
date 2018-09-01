@@ -58,11 +58,11 @@ fn main() {
             .middleware(SessionStorage::new(
                 CookieSessionBackend::signed(SESSION_SIGNING_KEY).secure(false),
             ))
-            .route("/", http::Method::GET, api::handle_index)
+            .route("/", http::Method::GET, api::index)
             .resource("/todo/{id}", |r: &mut Resource<_>| {
-                r.post().with(api::handle_update_or_delete)
+                r.post().with(api::update_or_delete)
             })
-            .route("/todo", http::Method::POST, api::handle_create)
+            .route("/todo", http::Method::POST, api::create)
             .handler(
                 "/static",
                 fs::StaticFiles::new("static/").expect("new static files failed"),
