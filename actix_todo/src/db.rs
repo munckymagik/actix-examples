@@ -32,6 +32,21 @@ impl Actor for DbExecutor {
     type Context = SyncContext<Self>;
 }
 
+pub struct AllTasks;
+
+impl Message for AllTasks {
+    type Result = Result<Vec<Task>, Error>;
+}
+
+impl Handler<AllTasks> for DbExecutor {
+    type Result = Result<Vec<Task>, Error>;
+
+    fn handle(&mut self, _: AllTasks, _: &mut Self::Context) -> Self::Result {
+        Task::all(self.get_conn()?.deref())
+            .map_err(|_| error::ErrorInternalServerError("Error inserting task"))
+    }
+}
+
 pub struct CreateTask {
     pub description: String,
 }
@@ -49,21 +64,6 @@ impl Handler<CreateTask> for DbExecutor {
         };
         Task::insert(new_task, self.get_conn()?.deref())
             .map(|_| ())
-            .map_err(|_| error::ErrorInternalServerError("Error inserting task"))
-    }
-}
-
-pub struct AllTasks;
-
-impl Message for AllTasks {
-    type Result = Result<Vec<Task>, Error>;
-}
-
-impl Handler<AllTasks> for DbExecutor {
-    type Result = Result<Vec<Task>, Error>;
-
-    fn handle(&mut self, _: AllTasks, _: &mut Self::Context) -> Self::Result {
-        Task::all(self.get_conn()?.deref())
             .map_err(|_| error::ErrorInternalServerError("Error inserting task"))
     }
 }
