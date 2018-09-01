@@ -5,8 +5,8 @@ use actix_web::{
 use futures::{future, Future};
 use tera::Context;
 
-use session::{get_flash, set_flash, FlashMessage};
 use handlers::{AllTasks, CreateTask, DeleteTask, ToggleTask};
+use session::{self, FlashMessage};
 use AppState;
 
 #[derive(Deserialize)]
@@ -52,7 +52,7 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
                 let mut context = Context::new();
                 context.add("tasks", &tasks);
 
-                if let Some(flash) = get_flash(&req)? {
+                if let Some(flash) = session::get_flash(&req)? {
                     context.add("msg", &(flash.kind, flash.message));
                     req.session().remove("flash");
                 }
@@ -73,7 +73,7 @@ pub fn create(
     (req, params): (HttpRequest<AppState>, Form<CreateForm>),
 ) -> FutureResponse<HttpResponse> {
     if params.description.is_empty() {
-        set_flash(&req, FlashMessage::error("Description cannot be empty"));
+        session::set_flash(&req, FlashMessage::error("Description cannot be empty"));
         future::ok(redirect_to("/")).responder()
     } else {
         req.state()
@@ -84,7 +84,10 @@ pub fn create(
             .from_err()
             .and_then(move |res| match res {
                 Ok(_) => {
-                    set_flash(&req, FlashMessage::success("Task successfully added"));
+                    session::set_flash(
+                        &req,
+                        FlashMessage::success("Task successfully added"),
+                    );
                     Ok(redirect_to("/"))
                 }
                 Err(_) => Ok(internal_server_error()),
@@ -112,7 +115,7 @@ pub fn update(
             .from_err()
             .and_then(move |res| match res {
                 Ok(_) => {
-                    set_flash(&req, FlashMessage::success("Task was deleted."));
+                    session::set_flash(&req, FlashMessage::success("Task was deleted."));
                     Ok(redirect_to("/"))
                 }
                 Err(_) => Ok(internal_server_error()),
