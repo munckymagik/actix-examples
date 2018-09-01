@@ -8,9 +8,7 @@ use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 
 use model::{NewTask, Task};
 
-type PgPool = Pool<ConnectionManager<PgConnection>>;
-
-pub fn init_pool() -> PgPool {
+pub fn init_pool() -> Pool<ConnectionManager<PgConnection>> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let manager = ConnectionManager::<PgConnection>::new(database_url);
     Pool::builder()
@@ -18,7 +16,7 @@ pub fn init_pool() -> PgPool {
         .expect("Failed to create pool")
 }
 
-pub struct DbExecutor(pub PgPool);
+pub struct DbExecutor(pub Pool<ConnectionManager<PgConnection>>);
 
 impl DbExecutor {
     pub fn get_conn(
