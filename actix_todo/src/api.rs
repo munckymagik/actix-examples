@@ -1,7 +1,7 @@
 use actix::prelude::Addr;
 use actix_web::middleware::session::RequestSession;
 use actix_web::{
-    http, AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse, Path,
+    error, http, AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse, Path,
 };
 use futures::{future, Future};
 use tera::{Context, Tera};
@@ -50,7 +50,9 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
                 let rendered = req.state()
                     .template
                     .render("index.html.tera", &context)
-                    .expect("failed to render template");
+                    .map_err(|e| {
+                        error::ErrorInternalServerError(e.description().to_owned())
+                    })?;
 
                 Ok(HttpResponse::Ok().body(rendered))
             }
