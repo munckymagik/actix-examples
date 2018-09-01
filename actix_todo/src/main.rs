@@ -54,7 +54,7 @@ fn main() {
             ))
             .route("/", http::Method::GET, api::index)
             .resource("/todo/{id}", |r: &mut Resource<_>| {
-                r.post().with(api::update)
+                r.post().with(api::update_with_reinterpreted_method)
             })
             .route("/todo", http::Method::POST, api::create)
             .handler(

@@ -106,17 +106,17 @@ pub struct UpdateForm {
     _method: String,
 }
 
-pub fn update(
+pub fn update_with_reinterpreted_method(
     (req, params, form): (HttpRequest<AppState>, Path<UpdateParams>, Form<UpdateForm>),
 ) -> FutureResponse<HttpResponse> {
     match form._method.as_ref() {
-        "put" => put(req, params),
+        "put" => update(req, params),
         "delete" => delete(req, params),
         _ => future::ok(bad_request()).responder(),
     }
 }
 
-fn put(
+fn update(
     req: HttpRequest<AppState>,
     params: Path<UpdateParams>,
 ) -> FutureResponse<HttpResponse> {
