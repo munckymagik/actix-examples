@@ -22,8 +22,8 @@ fn redirect_to(location: &str) -> HttpResponse {
         .finish()
 }
 
-fn bad_request() -> HttpResponse {
-    HttpResponse::BadRequest().body("400 Bad Request")
+pub fn bad_request<S>(_: &HttpRequest<S>, resp: HttpResponse) -> Result<Response> {
+    Ok(Response::Done(resp.into_builder().body("400 Bad Request")))
 }
 
 pub fn not_found() -> HttpResponse {
@@ -121,7 +121,10 @@ pub fn update_with_reinterpreted_method(
     match form._method.as_ref() {
         "put" => update(req, params),
         "delete" => delete(req, params),
-        _ => future::ok(bad_request()).responder(),
+        unsupported_method => {
+            let msg = format!("Unsupported HTTP method: {}", unsupported_method);
+            future::err(error::ErrorBadRequest(msg)).responder()
+        }
     }
 }
 

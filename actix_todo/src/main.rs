@@ -54,10 +54,14 @@ fn main() {
             .middleware(SessionStorage::new(
                 CookieSessionBackend::signed(SESSION_SIGNING_KEY).secure(false),
             ))
-            .middleware(ErrorHandlers::new().handler(
-                http::StatusCode::INTERNAL_SERVER_ERROR,
-                api::internal_server_error,
-            ))
+            .middleware(
+                ErrorHandlers::new()
+                    .handler(
+                        http::StatusCode::INTERNAL_SERVER_ERROR,
+                        api::internal_server_error,
+                    )
+                    .handler(http::StatusCode::BAD_REQUEST, api::bad_request),
+            )
             .route("/", http::Method::GET, api::index)
             .resource("/todo/{id}", |r: &mut Resource<_>| {
                 r.post().with(api::update_with_reinterpreted_method)
