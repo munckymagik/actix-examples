@@ -14,7 +14,7 @@ extern crate tera;
 
 use actix::prelude::SyncArbiter;
 use actix_web::middleware::session::{CookieSessionBackend, SessionStorage};
-use actix_web::middleware::Logger;
+use actix_web::middleware::{ErrorHandlers, Logger};
 use actix_web::{dev::Resource, fs, http, server, App};
 use dotenv::dotenv;
 use std::env;
@@ -53,6 +53,10 @@ fn main() {
         }).middleware(Logger::default())
             .middleware(SessionStorage::new(
                 CookieSessionBackend::signed(SESSION_SIGNING_KEY).secure(false),
+            ))
+            .middleware(ErrorHandlers::new().handler(
+                http::StatusCode::INTERNAL_SERVER_ERROR,
+                api::internal_server_error,
             ))
             .route("/", http::Method::GET, api::index)
             .resource("/todo/{id}", |r: &mut Resource<_>| {

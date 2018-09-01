@@ -1,7 +1,9 @@
 use actix::prelude::Addr;
 use actix_web::middleware::session::RequestSession;
+use actix_web::middleware::Response;
 use actix_web::{
     error, http, AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse, Path,
+    Result,
 };
 use futures::{future, Future};
 use tera::{Context, Tera};
@@ -28,8 +30,13 @@ pub fn not_found() -> HttpResponse {
     HttpResponse::NotFound().body("404 Not Found")
 }
 
-fn internal_server_error() -> HttpResponse {
-    HttpResponse::InternalServerError().body("500 Internal Server Error")
+pub fn internal_server_error<S>(
+    _: &HttpRequest<S>,
+    resp: HttpResponse,
+) -> Result<Response> {
+    Ok(Response::Done(
+        resp.into_builder().body("500 Internal Server Error"),
+    ))
 }
 
 pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
@@ -56,7 +63,7 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
 
                 Ok(HttpResponse::Ok().body(rendered))
             }
-            Err(_) => Ok(internal_server_error()),
+            Err(e) => Err(e),
         })
         .responder()
 }
@@ -92,7 +99,7 @@ pub fn create(
                     )?;
                     Ok(redirect_to("/"))
                 }
-                Err(_) => Ok(internal_server_error()),
+                Err(e) => Err(e),
             })
             .responder()
     }
@@ -128,7 +135,7 @@ fn update(
         .from_err()
         .and_then(move |res| match res {
             Ok(_) => Ok(redirect_to("/")),
-            Err(_) => Ok(internal_server_error()),
+            Err(e) => Err(e),
         })
         .responder()
 }
@@ -146,7 +153,7 @@ fn delete(
                 session::set_flash(&req, FlashMessage::success("Task was deleted."))?;
                 Ok(redirect_to("/"))
             }
-            Err(_) => Ok(internal_server_error()),
+            Err(e) => Err(e),
         })
         .responder()
 }

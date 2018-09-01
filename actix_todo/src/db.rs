@@ -1,4 +1,5 @@
 use std::ops::Deref;
+use std::time::Duration;
 
 use actix::prelude::{Actor, Handler, Message, SyncContext};
 use actix_web::{error, Error};
@@ -11,7 +12,9 @@ type PgPool = Pool<ConnectionManager<PgConnection>>;
 
 pub fn init_pool(database_url: &str) -> Result<PgPool, PoolError> {
     let manager = ConnectionManager::<PgConnection>::new(database_url);
-    Pool::builder().build(manager)
+    Pool::builder()
+        .connection_timeout(Duration::from_secs(3))
+        .build(manager)
 }
 
 pub struct DbExecutor(pub PgPool);
