@@ -14,21 +14,6 @@ pub struct AppState {
     pub db: Addr<DbExecutor>,
 }
 
-#[derive(Deserialize)]
-pub struct CreateForm {
-    description: String,
-}
-
-#[derive(Deserialize)]
-pub struct UpdateParams {
-    id: i32,
-}
-
-#[derive(Deserialize)]
-pub struct UpdateForm {
-    _method: String,
-}
-
 fn redirect_to(location: &str) -> HttpResponse {
     HttpResponse::Found()
         .header(http::header::LOCATION, location)
@@ -74,6 +59,11 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         .responder()
 }
 
+#[derive(Deserialize)]
+pub struct CreateForm {
+    description: String,
+}
+
 pub fn create(
     (req, params): (HttpRequest<AppState>, Form<CreateForm>),
 ) -> FutureResponse<HttpResponse> {
@@ -104,6 +94,16 @@ pub fn create(
             })
             .responder()
     }
+}
+
+#[derive(Deserialize)]
+pub struct UpdateParams {
+    id: i32,
+}
+
+#[derive(Deserialize)]
+pub struct UpdateForm {
+    _method: String,
 }
 
 pub fn update(
