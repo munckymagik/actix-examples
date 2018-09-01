@@ -5,7 +5,7 @@ use actix_web::{
 use futures::{future, Future};
 use tera::Context;
 
-use flash::{get_flash, set_flash, FlashMessage};
+use session::{get_flash, set_flash, FlashMessage};
 use handlers::{AllTasks, CreateTask, DeleteTask, ToggleTask};
 use AppState;
 

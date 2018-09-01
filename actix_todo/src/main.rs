@@ -21,10 +21,10 @@ use tera::Tera;
 
 mod api;
 mod db;
-mod flash;
 mod handlers;
 mod model;
 mod schema;
+mod session;
 
 static SESSION_SIGNING_KEY: &[u8] = &[0; 32];
 const NUM_DB_THREADS: usize = 3;
