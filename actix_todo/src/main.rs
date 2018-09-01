@@ -73,7 +73,7 @@ fn main() {
             .middleware(error_handlers)
             .route("/", http::Method::GET, api::index)
             .resource("/todo/{id}", |r: &mut Resource<_>| {
-                r.post().with(api::update_with_reinterpreted_method)
+                r.post().with(api::update)
             })
             .route("/todo", http::Method::POST, api::create)
             .handler("/static", static_files)

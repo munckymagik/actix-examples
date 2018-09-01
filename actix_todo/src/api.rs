@@ -115,11 +115,11 @@ pub struct UpdateForm {
     _method: String,
 }
 
-pub fn update_with_reinterpreted_method(
+pub fn update(
     (req, params, form): (HttpRequest<AppState>, Path<UpdateParams>, Form<UpdateForm>),
 ) -> FutureResponse<HttpResponse> {
     match form._method.as_ref() {
-        "put" => update(req, params),
+        "put" => toggle(req, params),
         "delete" => delete(req, params),
         unsupported_method => {
             let msg = format!("Unsupported HTTP method: {}", unsupported_method);
@@ -128,7 +128,7 @@ pub fn update_with_reinterpreted_method(
     }
 }
 
-fn update(
+fn toggle(
     req: HttpRequest<AppState>,
     params: Path<UpdateParams>,
 ) -> FutureResponse<HttpResponse> {
