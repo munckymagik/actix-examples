@@ -43,39 +43,43 @@ fn main() {
     let addr = SyncArbiter::start(NUM_DB_THREADS, move || db::DbExecutor(pool.clone()));
 
     let app = move || {
-        debug!("Compiling templates");
-        let tera: Tera = compile_templates!("templates/**/*");
-
         debug!("Constructing the App");
-        App::with_state(api::AppState {
-            template: tera,
-            db: addr.clone(),
-        }).middleware(Logger::default())
-            .middleware(SessionStorage::new(
-                CookieSessionBackend::signed(SESSION_SIGNING_KEY).secure(false),
-            ))
-            .middleware(
-                ErrorHandlers::new()
-                    .handler(
-                        http::StatusCode::INTERNAL_SERVER_ERROR,
-                        api::internal_server_error,
-                    )
-                    .handler(http::StatusCode::BAD_REQUEST, api::bad_request)
-                    .handler(http::StatusCode::NOT_FOUND, api::not_found),
+
+        let templates: Tera = compile_templates!("templates/**/*");
+
+        let session_store = SessionStorage::new(
+            CookieSessionBackend::signed(SESSION_SIGNING_KEY).secure(false),
+        );
+
+        let error_handlers = ErrorHandlers::new()
+            .handler(
+                http::StatusCode::INTERNAL_SERVER_ERROR,
+                api::internal_server_error,
             )
+            .handler(http::StatusCode::BAD_REQUEST, api::bad_request)
+            .handler(http::StatusCode::NOT_FOUND, api::not_found);
+
+        let static_files = fs::StaticFiles::new("static/")
+            .expect("failed constructing static files handler");
+
+        let state = api::AppState {
+            template: templates,
+            db: addr.clone(),
+        };
+
+        App::with_state(state)
+            .middleware(Logger::default())
+            .middleware(session_store)
+            .middleware(error_handlers)
             .route("/", http::Method::GET, api::index)
             .resource("/todo/{id}", |r: &mut Resource<_>| {
                 r.post().with(api::update_with_reinterpreted_method)
             })
             .route("/todo", http::Method::POST, api::create)
-            .handler(
-                "/static",
-                fs::StaticFiles::new("static/").expect("new static files failed"),
-            )
+            .handler("/static", static_files)
     };
 
     debug!("Starting server");
-
     server::new(app).bind("localhost:8088").unwrap().start();
 
     // Run actix system, this method actually starts all async processes
