@@ -9,6 +9,7 @@ use diesel::r2d2::{ConnectionManager, Pool, PoolError, PooledConnection};
 use model::{NewTask, Task};
 
 type PgPool = Pool<ConnectionManager<PgConnection>>;
+type PgPooledConnection = PooledConnection<ConnectionManager<PgConnection>>;
 
 pub fn init_pool(database_url: &str) -> Result<PgPool, PoolError> {
     let manager = ConnectionManager::<PgConnection>::new(database_url);
@@ -20,12 +21,8 @@ pub fn init_pool(database_url: &str) -> Result<PgPool, PoolError> {
 pub struct DbExecutor(pub PgPool);
 
 impl DbExecutor {
-    pub fn get_conn(
-        &self,
-    ) -> Result<PooledConnection<ConnectionManager<PgConnection>>, Error> {
-        self.0.get().map_err(|_| {
-            error::ErrorInternalServerError("Failed to get connection from the pool")
-        })
+    pub fn get_conn(&self) -> Result<PgPooledConnection, Error> {
+        self.0.get().map_err(|e| error::ErrorInternalServerError(e))
     }
 }
 
