@@ -78,8 +78,13 @@ pub fn create(
     (req, params): (HttpRequest<AppState>, Form<CreateForm>),
 ) -> FutureResponse<HttpResponse> {
     if params.description.is_empty() {
-        session::set_flash(&req, FlashMessage::error("Description cannot be empty"));
-        future::ok(redirect_to("/")).responder()
+        future::lazy(move || {
+            session::set_flash(
+                &req,
+                FlashMessage::error("Description cannot be empty"),
+            )?;
+            Ok(redirect_to("/"))
+        }).responder()
     } else {
         req.state()
             .db
@@ -92,7 +97,7 @@ pub fn create(
                     session::set_flash(
                         &req,
                         FlashMessage::success("Task successfully added"),
-                    );
+                    )?;
                     Ok(redirect_to("/"))
                 }
                 Err(_) => Ok(internal_server_error()),
@@ -120,7 +125,10 @@ pub fn update(
             .from_err()
             .and_then(move |res| match res {
                 Ok(_) => {
-                    session::set_flash(&req, FlashMessage::success("Task was deleted."));
+                    session::set_flash(
+                        &req,
+                        FlashMessage::success("Task was deleted."),
+                    )?;
                     Ok(redirect_to("/"))
                 }
                 Err(_) => Ok(internal_server_error()),

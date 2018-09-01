@@ -2,11 +2,8 @@ use actix_web::error::Result;
 use actix_web::middleware::session::RequestSession;
 use actix_web::HttpRequest;
 
-pub fn set_flash<T>(request: &HttpRequest<T>, flash: FlashMessage) {
-    request
-        .session()
-        .set("flash", flash)
-        .expect("failed to set cookie");
+pub fn set_flash<T>(request: &HttpRequest<T>, flash: FlashMessage) -> Result<()> {
+    request.session().set("flash", flash)
 }
 
 pub fn get_flash<T>(req: &HttpRequest<T>) -> Result<Option<FlashMessage>> {
