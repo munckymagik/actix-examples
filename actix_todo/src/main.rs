@@ -12,7 +12,7 @@ extern crate serde_derive;
 #[macro_use]
 extern crate tera;
 
-use actix::prelude::{Addr, SyncArbiter};
+use actix::prelude::SyncArbiter;
 use actix_web::middleware::session::{CookieSessionBackend, SessionStorage};
 use actix_web::middleware::Logger;
 use actix_web::{dev::Resource, fs, http, server, App};
@@ -27,11 +27,6 @@ mod session;
 
 static SESSION_SIGNING_KEY: &[u8] = &[0; 32];
 const NUM_DB_THREADS: usize = 3;
-
-pub struct AppState {
-    template: Tera,
-    db: Addr<db::DbExecutor>,
-}
 
 fn main() {
     dotenv().ok();
@@ -50,7 +45,7 @@ fn main() {
         let tera: Tera = compile_templates!("templates/**/*");
 
         debug!("Constructing the App");
-        App::with_state(AppState {
+        App::with_state(api::AppState {
             template: tera,
             db: addr.clone(),
         }).middleware(Logger::default())

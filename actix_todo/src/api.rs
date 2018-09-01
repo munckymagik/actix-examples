@@ -1,13 +1,18 @@
+use actix::prelude::Addr;
 use actix_web::middleware::session::RequestSession;
 use actix_web::{
     http, AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse, Path,
 };
 use futures::{future, Future};
-use tera::Context;
+use tera::{Context, Tera};
 
-use db::{AllTasks, CreateTask, DeleteTask, ToggleTask};
+use db::{AllTasks, CreateTask, DbExecutor, DeleteTask, ToggleTask};
 use session::{self, FlashMessage};
-use AppState;
+
+pub struct AppState {
+    pub template: Tera,
+    pub db: Addr<DbExecutor>,
+}
 
 #[derive(Deserialize)]
 pub struct CreateForm {
