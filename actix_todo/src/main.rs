@@ -60,7 +60,7 @@ fn main() {
             ))
             .route("/", http::Method::GET, api::index)
             .resource("/todo/{id}", |r: &mut Resource<_>| {
-                r.post().with(api::update_or_delete)
+                r.post().with(api::update)
             })
             .route("/todo", http::Method::POST, api::create)
             .handler(

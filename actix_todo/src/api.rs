@@ -93,7 +93,7 @@ pub fn create(
     }
 }
 
-pub fn update_or_delete(
+pub fn update(
     (req, params, form): (HttpRequest<AppState>, Path<UpdateParams>, Form<UpdateForm>),
 ) -> FutureResponse<HttpResponse> {
     match form._method.as_ref() {
