@@ -60,7 +60,8 @@ fn main() {
                         http::StatusCode::INTERNAL_SERVER_ERROR,
                         api::internal_server_error,
                     )
-                    .handler(http::StatusCode::BAD_REQUEST, api::bad_request),
+                    .handler(http::StatusCode::BAD_REQUEST, api::bad_request)
+                    .handler(http::StatusCode::NOT_FOUND, api::not_found),
             )
             .route("/", http::Method::GET, api::index)
             .resource("/todo/{id}", |r: &mut Resource<_>| {
@@ -71,7 +72,6 @@ fn main() {
                 "/static",
                 fs::StaticFiles::new("static/").expect("new static files failed"),
             )
-            .default_resource(|r: &mut Resource<_>| r.f(|_| api::not_found()))
     };
 
     debug!("Starting server");

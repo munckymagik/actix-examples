@@ -26,8 +26,9 @@ pub fn bad_request<S>(_: &HttpRequest<S>, resp: HttpResponse) -> Result<Response
     Ok(Response::Done(resp.into_builder().body("400 Bad Request")))
 }
 
-pub fn not_found() -> HttpResponse {
-    HttpResponse::NotFound().body("404 Not Found")
+
+pub fn not_found<S>(_: &HttpRequest<S>, resp: HttpResponse) -> Result<Response> {
+    Ok(Response::Done(resp.into_builder().body("404 Not Found")))
 }
 
 pub fn internal_server_error<S>(
