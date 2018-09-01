@@ -1,5 +1,4 @@
 use actix::prelude::Addr;
-use actix_web::middleware::session::RequestSession;
 use actix_web::middleware::Response;
 use actix_web::{
     error, http, AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse, Path,
@@ -51,7 +50,7 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
 
                 if let Some(flash) = session::get_flash(&req)? {
                     context.add("msg", &(flash.kind, flash.message));
-                    req.session().remove("flash");
+                    session::clear_flash(&req);
                 }
 
                 let rendered = req.state()
