@@ -15,42 +15,6 @@ pub struct AppState {
     pub db: Addr<DbExecutor>,
 }
 
-fn redirect_to(location: &str) -> HttpResponse {
-    HttpResponse::Found()
-        .header(http::header::LOCATION, location)
-        .finish()
-}
-
-pub fn bad_request<S: 'static>(
-    req: &HttpRequest<S>,
-    resp: HttpResponse,
-) -> Result<Response> {
-    let new_resp = NamedFile::open("static/errors/400.html")?
-        .set_status_code(resp.status())
-        .respond_to(req)?;
-    Ok(Response::Done(new_resp))
-}
-
-pub fn not_found<S: 'static>(
-    req: &HttpRequest<S>,
-    resp: HttpResponse,
-) -> Result<Response> {
-    let new_resp = NamedFile::open("static/errors/404.html")?
-        .set_status_code(resp.status())
-        .respond_to(req)?;
-    Ok(Response::Done(new_resp))
-}
-
-pub fn internal_server_error<S: 'static>(
-    req: &HttpRequest<S>,
-    resp: HttpResponse,
-) -> Result<Response> {
-    let new_resp = NamedFile::open("static/errors/500.html")?
-        .set_status_code(resp.status())
-        .respond_to(req)?;
-    Ok(Response::Done(new_resp))
-}
-
 pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     req.state()
         .db
@@ -171,4 +135,40 @@ fn delete(
             Err(e) => Err(e),
         })
         .responder()
+}
+
+fn redirect_to(location: &str) -> HttpResponse {
+    HttpResponse::Found()
+        .header(http::header::LOCATION, location)
+        .finish()
+}
+
+pub fn bad_request<S: 'static>(
+    req: &HttpRequest<S>,
+    resp: HttpResponse,
+) -> Result<Response> {
+    let new_resp = NamedFile::open("static/errors/400.html")?
+        .set_status_code(resp.status())
+        .respond_to(req)?;
+    Ok(Response::Done(new_resp))
+}
+
+pub fn not_found<S: 'static>(
+    req: &HttpRequest<S>,
+    resp: HttpResponse,
+) -> Result<Response> {
+    let new_resp = NamedFile::open("static/errors/404.html")?
+        .set_status_code(resp.status())
+        .respond_to(req)?;
+    Ok(Response::Done(new_resp))
+}
+
+pub fn internal_server_error<S: 'static>(
+    req: &HttpRequest<S>,
+    resp: HttpResponse,
+) -> Result<Response> {
+    let new_resp = NamedFile::open("static/errors/500.html")?
+        .set_status_code(resp.status())
+        .respond_to(req)?;
+    Ok(Response::Done(new_resp))
 }
