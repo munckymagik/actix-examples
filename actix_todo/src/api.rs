@@ -2,7 +2,7 @@ use actix::prelude::Addr;
 use actix_web::middleware::Response;
 use actix_web::{
     error, http, AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse, Path,
-    Result,
+    Result, fs::NamedFile, Responder
 };
 use futures::{future, Future};
 use tera::{Context, Tera};
@@ -21,21 +21,28 @@ fn redirect_to(location: &str) -> HttpResponse {
         .finish()
 }
 
-pub fn bad_request<S>(_: &HttpRequest<S>, resp: HttpResponse) -> Result<Response> {
-    Ok(Response::Done(resp.into_builder().body("400 Bad Request")))
+pub fn bad_request<S: 'static>(req: &HttpRequest<S>, resp: HttpResponse) -> Result<Response> {
+    let new_resp = NamedFile::open("static/errors/400.html")?
+        .set_status_code(resp.status())
+        .respond_to(req)?;
+    Ok(Response::Done(new_resp))
 }
 
-pub fn not_found<S>(_: &HttpRequest<S>, resp: HttpResponse) -> Result<Response> {
-    Ok(Response::Done(resp.into_builder().body("404 Not Found")))
+pub fn not_found<S: 'static>(req: &HttpRequest<S>, resp: HttpResponse) -> Result<Response> {
+    let new_resp = NamedFile::open("static/errors/404.html")?
+        .set_status_code(resp.status())
+        .respond_to(req)?;
+    Ok(Response::Done(new_resp))
 }
 
-pub fn internal_server_error<S>(
-    _: &HttpRequest<S>,
+pub fn internal_server_error<S: 'static>(
+    req: &HttpRequest<S>,
     resp: HttpResponse,
 ) -> Result<Response> {
-    Ok(Response::Done(
-        resp.into_builder().body("500 Internal Server Error"),
-    ))
+    let new_resp = NamedFile::open("static/errors/500.html")?
+        .set_status_code(resp.status())
+        .respond_to(req)?;
+    Ok(Response::Done(new_resp))
 }
 
 pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
