@@ -12,8 +12,7 @@ type PgPooledConnection = PooledConnection<ConnectionManager<PgConnection>>;
 
 pub fn init_pool(database_url: &str) -> Result<PgPool, PoolError> {
     let manager = ConnectionManager::<PgConnection>::new(database_url);
-    Pool::builder()
-        .build(manager)
+    Pool::builder().build(manager)
 }
 
 pub struct DbExecutor(pub PgPool);
